@@ -1,0 +1,180 @@
+.page {
+    min-height: 100vh;
+    display: flex;
+    background: var(--bg-secondary);
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.formCard {
+    flex: 1;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-8);
+    background: var(--bg-primary);
+}
+
+@media (min-width: 768px) {
+    .formCard {
+        padding: var(--space-12);
+    }
+}
+
+.header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+    text-decoration: none;
+}
+
+.logoText {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header h1 {
+    font-size: var(--text-3xl);
+    margin-bottom: var(--space-2);
+}
+
+.header p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.errorAlert {
+    padding: var(--space-4);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-lg);
+    color: var(--color-error);
+    font-size: var(--text-sm);
+    text-align: center;
+}
+
+.forgotPassword {
+    text-align: right;
+    margin-top: calc(-1 * var(--space-2));
+}
+
+.forgotPassword a {
+    font-size: var(--text-sm);
+    color: var(--color-primary);
+}
+
+.submitBtn {
+    margin-top: var(--space-2);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin: var(--space-6) 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-gray-200);
+}
+
+.divider span {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+.signupLink {
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.signupLink a {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* Illustration Panel */
+.illustration {
+    display: none;
+    flex: 1;
+    background: linear-gradient(135deg, var(--color-primary-50), rgba(78, 205, 196, 0.15));
+    position: relative;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .illustration {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+.illustrationContent {
+    text-align: center;
+    padding: var(--space-8);
+    max-width: 400px;
+}
+
+.dogEmoji {
+    font-size: 5rem;
+    margin-bottom: var(--space-6);
+    animation: bounce 2s infinite;
+}
+
+.illustrationContent h2 {
+    margin-bottom: var(--space-4);
+    color: var(--text-primary);
+}
+
+.illustrationContent>p {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-8);
+}
+
+.testimonial {
+    background: var(--bg-primary);
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+}
+
+.testimonial p {
+    font-style: italic;
+    color: var(--text-primary);
+    margin-bottom: var(--space-3);
+    line-height: var(--leading-relaxed);
+}
+
+.testimonial span {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+}

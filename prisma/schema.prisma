@@ -1,0 +1,300 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ==========================================
+// User & Authentication
+// ==========================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  bio           String?
+  location      String?   // City, e.g., "Brisbane, QLD"
+  avatar        String?
+  role          String    @default("USER") // USER, EXPERT, MODERATOR, ADMIN
+  expertType    String?   // VET, TRAINER, NUTRITIONIST (only for experts)
+  credentials   String?   // Professional credentials for experts
+  isVerified    Boolean   @default(false)
+  isEmailVerified Boolean @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  dogs          Dog[]
+  posts         ForumPost[]
+  comments      Comment[]
+  postUpvotes   PostUpvote[]
+  commentUpvotes CommentUpvote[]
+  eventRSVPs    EventRSVP[]
+  eventsCreated Event[]
+  notifications Notification[]
+  questions     ExpertQuestion[]
+  answers       ExpertAnswer[]
+}
+
+// ==========================================
+// Pet/Dog Profiles
+// ==========================================
+
+model Dog {
+  id          String   @id @default(cuid())
+  name        String
+  breed       String
+  birthDate   DateTime?
+  gender      String   // MALE, FEMALE, UNKNOWN
+  weight      Float?
+  bio         String?
+  photo       String?
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  healthRecords HealthRecord[]
+
+  @@index([ownerId])
+}
+
+// ==========================================
+// Health Tracking
+// ==========================================
+
+model HealthRecord {
+  id          String   @id @default(cuid())
+  dogId       String
+  dog         Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  type        String   // VACCINATION, MEDICATION, VET_VISIT, CONDITION, WEIGHT, OTHER
+  title       String
+  description String?
+  date        DateTime
+  dueDate     DateTime?  // For reminders
+  frequency   String?    // For recurring meds: DAILY, WEEKLY, MONTHLY
+  dosage      String?    // Medication dosage
+  vetClinic   String?    // Vet clinic name
+  notes       String?
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([dogId])
+  @@index([dueDate])
+}
+
+// ==========================================
+// Community Forums
+// ==========================================
+
+model ForumCategory {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slug        String   @unique
+  icon        String?
+  order       Int      @default(0)
+  color       String?  // Hex color for UI
+  
+  posts       ForumPost[]
+}
+
+model ForumPost {
+  id          String        @id @default(cuid())
+  title       String
+  content     String
+  images      String?       // JSON array of image URLs stored as string
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    ForumCategory @relation(fields: [categoryId], references: [id])
+  viewCount   Int           @default(0)
+  isPinned    Boolean       @default(false)
+  isClosed    Boolean       @default(false)
+  isDeleted   Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  comments    Comment[]
+  upvotes     PostUpvote[]
+
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentId  String?  // For nested replies
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  upvotes   CommentUpvote[]
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model PostUpvote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+model CommentUpvote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId])
+}
+
+// ==========================================
+// Expert Q&A
+// ==========================================
+
+model ExpertQuestion {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  category    String   // HEALTH, TRAINING, NUTRITION, BEHAVIOR
+  images      String?  // JSON array of image URLs
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  isPublic    Boolean  @default(true)
+  isPremium   Boolean  @default(false)
+  status      String   @default("PENDING") // PENDING, ANSWERED, CLOSED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  answers     ExpertAnswer[]
+
+  @@index([authorId])
+  @@index([category])
+  @@index([status])
+}
+
+model ExpertAnswer {
+  id          String   @id @default(cuid())
+  content     String
+  questionId  String
+  question    ExpertQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  expertId    String
+  expert      User     @relation(fields: [expertId], references: [id], onDelete: Cascade)
+  isAccepted  Boolean  @default(false)
+  helpfulCount Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([questionId])
+  @@index([expertId])
+}
+
+// ==========================================
+// Events & Meetups
+// ==========================================
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  category    String    // MEETUP, TRAINING, COMPETITION, CHARITY, SOCIAL, OTHER
+  date        DateTime
+  endDate     DateTime?
+  location    String
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  capacity    Int?
+  isOffLeash  Boolean   @default(false)
+  requiresTicket Boolean @default(false)
+  ticketUrl   String?
+  imageUrl    String?
+  creatorId   String
+  creator     User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  isApproved  Boolean   @default(true) // For moderation
+  isCancelled Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  rsvps       EventRSVP[]
+
+  @@index([creatorId])
+  @@index([date])
+  @@index([category])
+}
+
+model EventRSVP {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  status    String   // GOING, INTERESTED, MAYBE
+  dogsCount Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, eventId])
+}
+
+// ==========================================
+// Notifications
+// ==========================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // FORUM_REPLY, UPVOTE, EVENT_REMINDER, HEALTH_REMINDER, EXPERT_ANSWER, SYSTEM
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ==========================================
+// Regional Alerts
+// ==========================================
+
+model RegionalAlert {
+  id          String   @id @default(cuid())
+  title       String
+  message     String
+  region      String   // QLD, NSW, VIC, etc.
+  severity    String   // INFO, WARNING, CRITICAL
+  type        String   // TICK, SNAKE, HEATWAVE, DISEASE, OTHER
+  activeFrom  DateTime @default(now())
+  activeUntil DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([region])
+  @@index([isActive])
+}
