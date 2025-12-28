@@ -1,0 +1,266 @@
+.page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+}
+
+.header h1 {
+    margin: 0;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    min-height: 400px;
+    color: var(--text-secondary);
+}
+
+.content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--space-6);
+}
+
+@media (max-width: 768px) {
+    .content {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Profile Card */
+.profileCard {
+    padding: var(--space-8);
+}
+
+.avatarSection {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.avatar {
+    flex-shrink: 0;
+    font-size: var(--text-2xl);
+}
+
+.nameSection {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.nameSection h2 {
+    margin: 0;
+}
+
+.verified {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--color-success);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: bold;
+}
+
+.details {
+    margin-bottom: var(--space-6);
+}
+
+.bio {
+    margin-bottom: var(--space-6);
+}
+
+.bio p {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.infoItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--text-secondary);
+}
+
+.infoIcon {
+    font-size: var(--text-lg);
+}
+
+.credentials {
+    margin-top: var(--space-6);
+    padding: var(--space-4);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+}
+
+.credentials h4 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.credentials p {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.stats {
+    display: flex;
+    gap: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.statNumber {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.statLabel {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+/* Sidebar */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.dogsCard {
+    padding: var(--space-5);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+}
+
+.cardHeader h3 {
+    margin: 0;
+    font-size: var(--text-lg);
+}
+
+.emptyDogs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-6) 0;
+    text-align: center;
+}
+
+.emptyIcon {
+    font-size: 48px;
+    margin-bottom: var(--space-3);
+    opacity: 0.5;
+}
+
+.emptyDogs p {
+    margin-bottom: var(--space-4);
+    color: var(--text-secondary);
+}
+
+.dogsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.dogItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: background-color var(--transition-fast);
+}
+
+.dogItem:hover {
+    background: var(--bg-tertiary);
+}
+
+.dogAvatar {
+    background: var(--color-gray-100);
+    font-size: var(--text-xl);
+}
+
+.dogInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.dogInfo strong {
+    color: var(--text-primary);
+}
+
+.dogInfo span {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+/* Expert CTA */
+.expertCta {
+    padding: var(--space-5);
+    background: linear-gradient(135deg, var(--color-accent-purple), #7C3AED);
+    color: white;
+}
+
+.expertCta h4 {
+    margin: 0 0 var(--space-2);
+    color: white;
+}
+
+.expertCta p {
+    margin: 0 0 var(--space-4);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--text-sm);
+}
+
+.expertCta .btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.expertCta .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
