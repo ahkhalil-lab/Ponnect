@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: ponnect-db
+    environment:
+      POSTGRES_USER: ponnect
+      POSTGRES_PASSWORD: ponnect_password
+      POSTGRES_DB: ponnect
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ponnect"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: ponnect-backend
+    environment:
+      DATABASE_URL: postgresql://ponnect:ponnect_password@postgres:5432/ponnect
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      PORT: 3001
+      NODE_ENV: production
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+
+volumes:
+  postgres_data:

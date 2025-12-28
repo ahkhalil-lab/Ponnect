@@ -1,0 +1,238 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  firstName     String
+  lastName      String
+  username      String   @unique
+  bio           String?
+  location      String?  // Brisbane/Queensland area
+  isVerified    Boolean  @default(false)
+  role          UserRole @default(USER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  dogs          Dog[]
+  forumPosts    ForumPost[]
+  forumComments ForumComment[]
+  questions     Question[]
+  answers       Answer[]
+  events        Event[]
+  eventAttendees EventAttendee[]
+  
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  VET
+  TRAINER
+  ADMIN
+}
+
+model Dog {
+  id           String   @id @default(uuid())
+  name         String
+  breed        String
+  birthDate    DateTime?
+  weight       Float?
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ownerId      String
+  owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Health tracking
+  vaccinations Vaccination[]
+  medications  Medication[]
+  reminders    Reminder[]
+
+  @@map("dogs")
+}
+
+model Vaccination {
+  id           String   @id @default(uuid())
+  name         String
+  date         DateTime
+  nextDue      DateTime?
+  veterinarian String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  dogId        String
+  dog          Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+
+  @@map("vaccinations")
+}
+
+model Medication {
+  id           String   @id @default(uuid())
+  name         String
+  dosage       String
+  frequency    String
+  startDate    DateTime
+  endDate      DateTime?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  dogId        String
+  dog          Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+
+  @@map("medications")
+}
+
+model Reminder {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  dueDate      DateTime
+  type         ReminderType
+  completed    Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  dogId        String
+  dog          Dog          @relation(fields: [dogId], references: [id], onDelete: Cascade)
+
+  @@map("reminders")
+}
+
+enum ReminderType {
+  VACCINATION
+  MEDICATION
+  VET_APPOINTMENT
+  GROOMING
+  OTHER
+}
+
+model ForumPost {
+  id           String   @id @default(uuid())
+  title        String
+  content      String
+  category     String
+  views        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  comments     ForumComment[]
+
+  @@map("forum_posts")
+}
+
+model ForumComment {
+  id           String   @id @default(uuid())
+  content      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  postId       String
+  post         ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("forum_comments")
+}
+
+model Question {
+  id           String   @id @default(uuid())
+  title        String
+  content      String
+  category     String
+  status       QuestionStatus @default(OPEN)
+  views        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  answers      Answer[]
+
+  @@map("questions")
+}
+
+enum QuestionStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
+
+model Answer {
+  id           String   @id @default(uuid())
+  content      String
+  isAccepted   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("answers")
+}
+
+model Event {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  location     String   // Brisbane/Queensland specific
+  latitude     Float?
+  longitude    Float?
+  startTime    DateTime
+  endTime      DateTime?
+  maxAttendees Int?
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  organizerId  String
+  organizer    User     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+
+  attendees    EventAttendee[]
+
+  @@map("events")
+}
+
+model EventAttendee {
+  id           String   @id @default(uuid())
+  status       AttendeeStatus @default(GOING)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@map("event_attendees")
+}
+
+enum AttendeeStatus {
+  GOING
+  MAYBE
+  NOT_GOING
+}
