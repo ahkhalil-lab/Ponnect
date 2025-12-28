@@ -249,6 +249,25 @@ CORS_ORIGIN=http://localhost:3000
 - **TRAINER** - Verified dog trainer (can answer expert questions)
 - **ADMIN** - Platform administrator
 
+## Security Considerations
+
+### Current Implementation
+- JWT-based authentication with bcrypt password hashing
+- Role-based access control for verified professionals
+- Environment variable configuration for secrets
+- Input sanitization for user-provided data
+
+### Production Recommendations
+1. **Token Storage**: Currently uses localStorage for simplicity. For production, consider:
+   - HttpOnly cookies to prevent XSS attacks
+   - Secure and SameSite cookie attributes
+   - Token refresh mechanism
+2. **Environment Variables**: Always use strong, unique secrets in production
+3. **HTTPS**: Deploy with SSL/TLS certificates
+4. **Rate Limiting**: Add rate limiting to prevent abuse
+5. **Input Validation**: Implement comprehensive input validation and sanitization
+6. **Database**: Use connection pooling and prepared statements (Prisma handles this)
+
 ## Contributing
 
 We welcome contributions from the community! Please feel free to submit issues and pull requests.
