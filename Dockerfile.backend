@@ -1,0 +1,31 @@
+# Backend Dockerfile
+FROM node:18-alpine AS backend-builder
+
+WORKDIR /app
+
+# Copy backend package files
+COPY packages/backend/package*.json ./packages/backend/
+RUN cd packages/backend && npm ci
+
+# Copy backend source
+COPY packages/backend ./packages/backend
+
+# Generate Prisma client and build
+WORKDIR /app/packages/backend
+RUN npm run prisma:generate
+RUN npm run build
+
+# Production image
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy backend dependencies and built files
+COPY --from=backend-builder /app/packages/backend/package*.json ./
+COPY --from=backend-builder /app/packages/backend/node_modules ./node_modules
+COPY --from=backend-builder /app/packages/backend/dist ./dist
+COPY --from=backend-builder /app/packages/backend/prisma ./prisma
+
+EXPOSE 3001
+
+CMD ["node", "dist/index.js"]
