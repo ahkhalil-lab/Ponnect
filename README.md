@@ -264,7 +264,9 @@ CORS_ORIGIN=http://localhost:3000
    - Token refresh mechanism
 2. **Environment Variables**: Always use strong, unique secrets in production
 3. **HTTPS**: Deploy with SSL/TLS certificates
-4. **Rate Limiting**: Add rate limiting to prevent abuse
+4. **Rate Limiting**: Add rate limiting to prevent abuse (e.g., using express-rate-limit)
+   - The current implementation does not include rate limiting
+   - Recommended for all authentication endpoints and API routes
 5. **Input Validation**: Implement comprehensive input validation and sanitization
 6. **Database**: Use connection pooling and prepared statements (Prisma handles this)
 
