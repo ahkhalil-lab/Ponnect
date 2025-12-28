@@ -46,8 +46,9 @@ export const getEvents = async (req: Request, res: Response) => {
     const where: any = {};
     
     if (location && typeof location === 'string') {
-      // Sanitize location input to prevent SQL injection
-      const sanitizedLocation = location.replace(/[^\w\s,]/g, '');
+      // Sanitize location input - allow common location characters
+      // Permits: letters, numbers, spaces, commas, hyphens, apostrophes, periods, parentheses
+      const sanitizedLocation = location.replace(/[^a-zA-Z0-9\s,\-'.()]/g, '');
       where.location = { contains: sanitizedLocation, mode: 'insensitive' };
     }
 
