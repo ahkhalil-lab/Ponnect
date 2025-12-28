@@ -11,6 +11,7 @@ interface User {
     email: string
     avatar?: string | null
     role: string
+    isVerified?: boolean
 }
 
 export default function DashboardLayout({
@@ -50,11 +51,17 @@ export default function DashboardLayout({
         router.push('/')
     }
 
+    const isExpert = user && (
+        (user.role === 'EXPERT' && user.isVerified) ||
+        user.role === 'ADMIN'
+    )
+
     const navItems = [
         { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
         { href: '/forums', label: 'Forums', icon: '💬' },
         { href: '/events', label: 'Events', icon: '📅' },
         { href: '/expert-qa', label: 'Expert Q&A', icon: '🩺' },
+        ...(isExpert ? [{ href: '/expert-dashboard', label: 'Expert Dashboard', icon: '⭐' }] : []),
         { href: '/dogs', label: 'My Dogs', icon: '🐕' },
         { href: '/notifications', label: 'Notifications', icon: '🔔' },
     ]

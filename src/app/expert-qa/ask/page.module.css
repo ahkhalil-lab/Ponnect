@@ -1,0 +1,226 @@
+.page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-sm);
+}
+
+.breadcrumb a {
+    color: var(--text-secondary);
+}
+
+.breadcrumb a:hover {
+    color: var(--color-primary);
+}
+
+.separator {
+    color: var(--text-tertiary);
+}
+
+.breadcrumb span:last-child {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: var(--space-4);
+    color: var(--text-secondary);
+}
+
+/* Form Card */
+.formCard {
+    padding: var(--space-8);
+}
+
+.formCard h1 {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-2);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+}
+
+/* Form */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+/* Category Selection */
+.categorySection {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.categoryGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+}
+
+.categoryOption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background: var(--bg-secondary);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+}
+
+.categoryOption:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-50);
+}
+
+.categoryOption.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-100);
+}
+
+.categoryIcon {
+    font-size: var(--text-3xl);
+}
+
+.categoryLabel {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.categoryDesc {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+.textarea {
+    min-height: 180px;
+    resize: vertical;
+}
+
+.charCount {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    text-align: right;
+    margin-top: var(--space-1);
+}
+
+/* Visibility Toggle */
+.visibilitySection {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    cursor: pointer;
+}
+
+.toggle input {
+    display: none;
+}
+
+.toggleSlider {
+    width: 48px;
+    height: 24px;
+    background: var(--color-gray-300);
+    border-radius: var(--radius-full);
+    position: relative;
+    transition: background var(--transition-fast);
+}
+
+.toggleSlider::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: var(--radius-full);
+    top: 2px;
+    left: 2px;
+    transition: transform var(--transition-fast);
+}
+
+.toggle input:checked+.toggleSlider {
+    background: var(--color-primary);
+}
+
+.toggle input:checked+.toggleSlider::after {
+    transform: translateX(24px);
+}
+
+.toggleLabel {
+    font-weight: 500;
+}
+
+.visibilityHint {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+/* Error */
+.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-gray-100);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page {
+        padding: var(--space-4);
+    }
+
+    .formCard {
+        padding: var(--space-5);
+    }
+
+    .categoryGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .actions {
+        flex-direction: column-reverse;
+    }
+
+    .actions .btn {
+        width: 100%;
+    }
+}
