@@ -45,6 +45,18 @@ export async function GET(request: Request) {
                             avatar: true,
                         },
                     },
+                    dogs: {
+                        include: {
+                            dog: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    breed: true,
+                                    photo: true,
+                                },
+                            },
+                        },
+                    },
                     _count: {
                         select: { answers: true },
                     },
@@ -84,7 +96,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { title, content, category, isPublic, images } = body
+        const { title, content, category, isPublic, images, dogIds } = body
 
         if (!title || title.trim().length === 0) {
             return NextResponse.json(
@@ -108,6 +120,19 @@ export async function POST(request: Request) {
             )
         }
 
+        // Validate dogIds if provided - ensure they belong to the user
+        let validDogIds: string[] = []
+        if (dogIds && Array.isArray(dogIds) && dogIds.length > 0) {
+            const userDogs = await prisma.dog.findMany({
+                where: {
+                    id: { in: dogIds },
+                    ownerId: user.id,
+                },
+                select: { id: true },
+            })
+            validDogIds = userDogs.map(d => d.id)
+        }
+
         const question = await prisma.expertQuestion.create({
             data: {
                 title: title.trim(),
@@ -116,6 +141,9 @@ export async function POST(request: Request) {
                 isPublic: isPublic !== false,
                 images: images ? JSON.stringify(images) : null,
                 authorId: user.id,
+                dogs: validDogIds.length > 0 ? {
+                    create: validDogIds.map(dogId => ({ dogId })),
+                } : undefined,
             },
             include: {
                 author: {
@@ -123,6 +151,18 @@ export async function POST(request: Request) {
                         id: true,
                         name: true,
                         avatar: true,
+                    },
+                },
+                dogs: {
+                    include: {
+                        dog: {
+                            select: {
+                                id: true,
+                                name: true,
+                                breed: true,
+                                photo: true,
+                            },
+                        },
                     },
                 },
             },

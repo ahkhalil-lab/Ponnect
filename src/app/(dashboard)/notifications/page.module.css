@@ -1,0 +1,227 @@
+.page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-6);
+    gap: var(--space-4);
+}
+
+.header h1 {
+    font-size: var(--text-3xl);
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: var(--text-base);
+    margin: 0;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: var(--space-4);
+    color: var(--text-secondary);
+}
+
+/* Filter Tabs */
+.filterTabs {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+}
+
+.filterTab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-primary);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.filterTab:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.filterTab.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+/* Notifications List */
+.notificationsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.dateGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.dateLabel {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.notificationCard {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: var(--space-4);
+    transition: all var(--transition-fast);
+}
+
+.notificationCard.unread {
+    background: linear-gradient(135deg, rgba(78, 205, 196, 0.05), rgba(255, 107, 107, 0.03));
+    border-left: 3px solid var(--color-primary);
+}
+
+.notificationMain {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    flex: 1;
+}
+
+.typeIcon {
+    font-size: var(--text-xl);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.notificationContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.notificationHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1);
+}
+
+.notificationHeader strong {
+    font-size: var(--text-base);
+    color: var(--text-primary);
+}
+
+.notificationTime {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.notificationMessage {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.unreadDot {
+    width: 8px;
+    height: 8px;
+    background: var(--color-primary);
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+    margin-top: var(--space-2);
+}
+
+.notificationActions {
+    display: flex;
+    gap: var(--space-1);
+    margin-left: var(--space-2);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.notificationCard:hover .notificationActions {
+    opacity: 1;
+}
+
+/* Empty State */
+.emptyState {
+    text-align: center;
+    padding: var(--space-12);
+}
+
+.emptyIcon {
+    font-size: var(--text-5xl);
+    margin-bottom: var(--space-4);
+}
+
+.emptyState h2 {
+    margin-bottom: var(--space-2);
+}
+
+.emptyState p {
+    color: var(--text-secondary);
+}
+
+/* Settings Link */
+.settingsLink {
+    margin-top: var(--space-6);
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page {
+        padding: var(--space-4);
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filterTabs {
+        gap: var(--space-1);
+    }
+
+    .filterTab {
+        padding: var(--space-2);
+        font-size: var(--text-xs);
+    }
+
+    .notificationActions {
+        opacity: 1;
+    }
+}

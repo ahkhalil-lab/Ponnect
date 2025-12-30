@@ -1,0 +1,194 @@
+.page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-sm);
+}
+
+.breadcrumb a {
+    color: var(--text-secondary);
+}
+
+.breadcrumb a:hover {
+    color: var(--color-primary);
+}
+
+.separator {
+    color: var(--text-tertiary);
+}
+
+.breadcrumb>span:last-child {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: var(--space-4);
+    color: var(--text-secondary);
+}
+
+/* Settings Card */
+.settingsCard {
+    padding: var(--space-8);
+}
+
+.settingsCard h1 {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-2);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+}
+
+/* Section */
+.section {
+    margin-bottom: var(--space-8);
+}
+
+.section h2 {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-1);
+}
+
+.sectionDesc {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-4);
+}
+
+/* Toggle List */
+.toggleList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.toggleItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.toggleItem:hover {
+    background: var(--color-gray-100);
+}
+
+.toggleInfo {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
+.toggleIcon {
+    font-size: var(--text-xl);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+}
+
+.toggleInfo strong {
+    display: block;
+    font-size: var(--text-base);
+    margin-bottom: var(--space-1);
+}
+
+.toggleInfo p {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+/* Toggle Button */
+.toggle {
+    width: 48px;
+    height: 26px;
+    background: var(--color-gray-300);
+    border: none;
+    border-radius: var(--radius-full);
+    position: relative;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.toggle.on {
+    background: var(--color-primary);
+}
+
+.toggleSlider {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: var(--radius-full);
+    top: 2px;
+    left: 2px;
+    transition: transform var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.toggle.on .toggleSlider {
+    transform: translateX(22px);
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-4);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.savedMessage {
+    font-size: var(--text-sm);
+    color: var(--color-success);
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page {
+        padding: var(--space-4);
+    }
+
+    .settingsCard {
+        padding: var(--space-5);
+    }
+
+    .toggleItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .toggle {
+        align-self: flex-end;
+    }
+}

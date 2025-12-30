@@ -39,6 +39,7 @@ model User {
   notifications Notification[]
   questions     ExpertQuestion[]
   answers       ExpertAnswer[]
+  savedAlerts   SavedAlert[]
 }
 
 // ==========================================
@@ -60,6 +61,7 @@ model Dog {
   updatedAt   DateTime @updatedAt
   
   healthRecords HealthRecord[]
+  questions     QuestionDog[]
 
   @@index([ownerId])
 }
@@ -189,6 +191,7 @@ model ExpertQuestion {
   updatedAt   DateTime @updatedAt
 
   answers     ExpertAnswer[]
+  dogs        QuestionDog[]
 
   @@index([authorId])
   @@index([category])
@@ -209,6 +212,18 @@ model ExpertAnswer {
 
   @@index([questionId])
   @@index([expertId])
+}
+
+model QuestionDog {
+  id          String @id @default(cuid())
+  questionId  String
+  dogId       String
+  question    ExpertQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  dog         Dog @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  
+  @@unique([questionId, dogId])
+  @@index([questionId])
+  @@index([dogId])
 }
 
 // ==========================================
@@ -288,13 +303,34 @@ model RegionalAlert {
   title       String
   message     String
   region      String   // QLD, NSW, VIC, etc.
-  severity    String   // INFO, WARNING, CRITICAL
+  severity    String   // INFO, WATCH, WARNING, EMERGENCY (4 levels)
   type        String   // TICK, SNAKE, HEATWAVE, DISEASE, OTHER
   activeFrom  DateTime @default(now())
   activeUntil DateTime?
   isActive    Boolean  @default(true)
+  guidance    String?  // JSON array of action items ("What to do")
+  source      String   @default("ADMIN") // ADMIN, OPEN_METEO, GOV_RSS, COMMUNITY
+  confidence  String   @default("HIGH")  // LOW, MEDIUM, HIGH, VERIFIED
+  externalId  String?  // For deduplication of external sources
   createdAt   DateTime @default(now())
+
+  savedBy     SavedAlert[]
 
   @@index([region])
   @@index([isActive])
+  @@index([externalId])
+}
+
+// User Saved Alerts
+model SavedAlert {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alertId   String
+  alert     RegionalAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, alertId])
+  @@index([userId])
+  @@index([alertId])
 }

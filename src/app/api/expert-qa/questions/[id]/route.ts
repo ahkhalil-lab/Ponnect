@@ -21,6 +21,18 @@ export async function GET(request: Request, { params }: RouteParams) {
                         avatar: true,
                     },
                 },
+                dogs: {
+                    include: {
+                        dog: {
+                            select: {
+                                id: true,
+                                name: true,
+                                breed: true,
+                                photo: true,
+                            },
+                        },
+                    },
+                },
                 answers: {
                     orderBy: [
                         { isAccepted: 'desc' },

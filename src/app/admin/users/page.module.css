@@ -1,0 +1,195 @@
+.page h1 {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-2);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-12);
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.searchForm {
+    display: flex;
+    gap: var(--space-2);
+    flex: 1;
+}
+
+.searchForm input {
+    flex: 1;
+    max-width: 300px;
+}
+
+.filters {
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* Table */
+.tableCard {
+    padding: 0;
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.table th {
+    background: var(--bg-secondary);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+
+.table tr:hover {
+    background: var(--bg-secondary);
+}
+
+/* User Cell */
+.userCell {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    overflow: hidden;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.userCell strong {
+    display: block;
+    font-size: var(--text-sm);
+}
+
+.userCell span {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+/* Badges */
+.badge {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+}
+
+.badgeUser {
+    background: var(--color-gray-100);
+    color: var(--text-secondary);
+}
+
+.badgeExpert {
+    background: rgba(78, 205, 196, 0.1);
+    color: var(--color-primary);
+}
+
+.badgeModerator {
+    background: rgba(255, 193, 7, 0.1);
+    color: #d9a406;
+}
+
+.badgeAdmin {
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--color-error);
+}
+
+.verified {
+    color: var(--color-success);
+    font-size: var(--text-sm);
+}
+
+.unverified {
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+.stats {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.roleSelect {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-gray-200);
+    background: var(--bg-primary);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-gray-100);
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+}
+
+.paginationButtons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .toolbar {
+        flex-direction: column;
+    }
+
+    .table {
+        font-size: var(--text-sm);
+    }
+
+    .table th:nth-child(4),
+    .table td:nth-child(4) {
+        display: none;
+    }
+}
