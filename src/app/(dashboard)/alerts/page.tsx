@@ -73,6 +73,7 @@ export default function AlertsPage() {
     const [userDogs, setUserDogs] = useState<UserDog[]>([])
     const [userLocation, setUserLocation] = useState<string | null>(null)
     const [savedAlerts, setSavedAlerts] = useState<Set<string>>(new Set())
+    const [govAlerts, setGovAlerts] = useState<ExternalAlert[]>([])
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -113,6 +114,7 @@ export default function AlertsPage() {
     useEffect(() => {
         fetchAlerts()
         fetchExternalAlerts()
+        fetchGovAlerts()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [regionFilter, typeFilter])
 
@@ -155,6 +157,27 @@ export default function AlertsPage() {
             }
         } catch (error) {
             console.error('Failed to fetch external alerts:', error)
+        }
+    }
+
+    const fetchGovAlerts = async () => {
+        try {
+            const params = new URLSearchParams()
+            if (regionFilter !== 'all') params.set('region', regionFilter)
+
+            const res = await fetch(`/api/alerts/gov?${params}`)
+            const data = await res.json()
+
+            if (data.success) {
+                // Filter by type if needed
+                let filteredAlerts = data.data
+                if (typeFilter !== 'all') {
+                    filteredAlerts = data.data.filter((a: ExternalAlert) => a.type === typeFilter)
+                }
+                setGovAlerts(filteredAlerts)
+            }
+        } catch (error) {
+            console.error('Failed to fetch gov alerts:', error)
         }
     }
 
@@ -479,6 +502,85 @@ export default function AlertsPage() {
                     {lastUpdated && ` • Updated ${new Date(lastUpdated).toLocaleTimeString('en-AU')}`}
                 </div>
             </section>
+
+            {/* Government Biosecurity Alerts */}
+            {govAlerts.length > 0 && (
+                <section className={styles.externalSection}>
+                    <div className={styles.sectionHeader}>
+                        <h2 className={styles.sectionTitle}>
+                            🏛️ Government Biosecurity Alerts
+                            <span className={`${styles.liveIndicator}`} style={{ background: '#1e40af' }}>Official</span>
+                        </h2>
+                    </div>
+
+                    <div className={styles.alertsList}>
+                        {govAlerts.slice(0, 5).map((alert) => (
+                            <div
+                                key={alert.id}
+                                className={`card ${styles.alertCard} ${getSeverityClass(alert.severity)}`}
+                            >
+                                <div className={styles.alertHeader}>
+                                    <span className={styles.alertType}>
+                                        {getTypeIcon(alert.type)} {alert.type}
+                                    </span>
+                                    <span className={`${styles.confidenceBadge} verified`}>
+                                        ✓ {alert.source.replace('GOV_', '')}
+                                    </span>
+                                    <span className={`${styles.alertBadge} ${getSeverityClass(alert.severity)}`}>
+                                        {getSeverityLabel(alert.severity)}
+                                    </span>
+                                </div>
+                                <h3>{alert.title}</h3>
+                                <p className={styles.alertMessage}>{alert.message}</p>
+                                <div className={styles.alertMeta}>
+                                    <span className={styles.alertRegion}>📍 {alert.region}</span>
+                                    <span className={styles.durationBadge}>
+                                        📅 {formatDate(alert.activeFrom)}
+                                    </span>
+                                    <a
+                                        href={(alert as ExternalAlert & { link?: string }).link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.alertActionBtn}
+                                        style={{ textDecoration: 'none' }}
+                                    >
+                                        🔗 Read More
+                                    </a>
+                                </div>
+
+                                {/* Guidance Section */}
+                                {alert.guidance && alert.guidance.length > 0 && (
+                                    <div className={styles.guidanceSection}>
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleGuidance(alert.id)}
+                                            className={`${styles.guidanceToggle} ${expandedAlerts.has(alert.id) ? styles.open : ''}`}
+                                        >
+                                            <span>💡</span>
+                                            <span>What should I do?</span>
+                                            <span>▼</span>
+                                        </button>
+                                        {expandedAlerts.has(alert.id) && (
+                                            <div className={styles.guidanceContent}>
+                                                <ul className={styles.guidanceList}>
+                                                    {alert.guidance.map((item, idx) => (
+                                                        <li key={idx}>{item}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className={styles.attribution}>
+                        <span>🏛️</span>
+                        Official data from <a href="https://www.agriculture.gov.au" target="_blank" rel="noopener noreferrer">DAFF</a> & <a href="https://www.dpi.nsw.gov.au" target="_blank" rel="noopener noreferrer">NSW DPI</a>
+                    </div>
+                </section>
+            )}
 
             {/* Info Section */}
             <div className={`card ${styles.infoSection}`}>

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { generateAlertGuidance } from '@/lib/ai-guidance'
 
 // Australian capital cities with coordinates
 const AUSTRALIAN_CITIES = [
@@ -155,6 +156,9 @@ export async function GET(request: Request) {
             ? AUSTRALIAN_CITIES.filter(c => c.region === region)
             : AUSTRALIAN_CITIES
 
+        // Check if AI guidance is requested
+        const useAiGuidance = searchParams.get('ai') === 'true'
+
         const alerts: ExternalAlert[] = []
 
         // Fetch weather data for each city
@@ -209,11 +213,34 @@ export async function GET(request: Request) {
             return new Date(a.activeFrom).getTime() - new Date(b.activeFrom).getTime()
         })
 
+        // Optionally enhance with AI guidance (sequential to respect rate limits)
+        let finalAlerts = alerts
+        if (useAiGuidance && alerts.length > 0) {
+            finalAlerts = []
+            for (const alert of alerts) {
+                try {
+                    const aiGuidance = await generateAlertGuidance({
+                        title: alert.title,
+                        message: alert.message,
+                        type: alert.type,
+                        severity: alert.severity,
+                        region: alert.region,
+                        source: alert.source,
+                    })
+                    finalAlerts.push({ ...alert, guidance: aiGuidance })
+                } catch (e) {
+                    console.error('[External Alerts] AI guidance failed:', e)
+                    finalAlerts.push(alert) // Keep original guidance
+                }
+            }
+        }
+
         return NextResponse.json({
             success: true,
-            data: alerts,
+            data: finalAlerts,
             source: 'Open-Meteo Weather API',
             lastUpdated: new Date().toISOString(),
+            aiGuidance: useAiGuidance,
         })
     } catch (error) {
         console.error('External alerts fetch error:', error)

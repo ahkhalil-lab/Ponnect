@@ -124,16 +124,40 @@ export function categorizeAlert(item: RSSItem): {
 
 /**
  * Clean HTML from description text
+ * Handles both raw HTML and HTML-encoded content from RSS feeds
  */
 export function stripHtml(html: string): string {
-    return html
-        .replace(/<[^>]*>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
+    if (!html) return ''
+
+    let text = html
+
+    // First, decode HTML entities that might contain HTML
+    text = text
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
         .replace(/&quot;/g, '"')
         .replace(/&#39;/g, "'")
-        .replace(/\s+/g, ' ')
-        .trim()
+        .replace(/&nbsp;/g, ' ')
+
+    // Remove style blocks (common in RSS feeds)
+    text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+
+    // Remove script blocks
+    text = text.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+
+    // Remove all remaining HTML tags
+    text = text.replace(/<[^>]+>/g, '')
+
+    // Clean up entities that might have been double-encoded
+    text = text
+        .replace(/&lt;/g, '')
+        .replace(/&gt;/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&nbsp;/g, ' ')
+
+    // Normalize whitespace
+    text = text.replace(/\s+/g, ' ').trim()
+
+    return text
 }
