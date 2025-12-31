@@ -25,6 +25,7 @@ export default function DashboardLayout({
     const [isLoading, setIsLoading] = useState(true)
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [unreadCount, setUnreadCount] = useState(0)
+    const [unreadMessageCount, setUnreadMessageCount] = useState(0)
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -43,6 +44,16 @@ export default function DashboardLayout({
                         }
                     } catch {
                         // Ignore count fetch errors
+                    }
+                    // Fetch unread message count
+                    try {
+                        const msgCountRes = await fetch('/api/messages/unread-count')
+                        const msgCountData = await msgCountRes.json()
+                        if (msgCountData.success) {
+                            setUnreadMessageCount(msgCountData.data.count)
+                        }
+                    } catch {
+                        // Ignore message count fetch errors
                     }
                 } else {
                     router.push('/login')
@@ -71,8 +82,10 @@ export default function DashboardLayout({
 
     const navItems = [
         { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
-        { href: '/search', label: 'Search', icon: '🔍' },
-        { href: '/forums', label: 'Forums', icon: '💬' },
+        { href: '/feed', label: 'Feed', icon: '📱' },
+        { href: '/community', label: 'Community', icon: '👥' },
+        { href: '/messages', label: 'Messages', icon: '💬', badge: unreadMessageCount > 0 ? unreadMessageCount : undefined },
+        { href: '/forums', label: 'Forums', icon: '📝' },
         { href: '/events', label: 'Events', icon: '📅' },
         { href: '/expert-qa', label: 'Expert Q&A', icon: '🩺' },
         ...(isExpert ? [{ href: '/expert-dashboard', label: 'Expert Dashboard', icon: '⭐' }] : []),

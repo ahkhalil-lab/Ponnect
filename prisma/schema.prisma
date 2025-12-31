@@ -40,6 +40,15 @@ model User {
   questions     ExpertQuestion[]
   answers       ExpertAnswer[]
   savedAlerts   SavedAlert[]
+  
+  // Social features
+  socialPosts       SocialPost[]
+  socialLikes       SocialLike[]
+  socialComments    SocialComment[]
+  followers         Follow[]  @relation("following")
+  following         Follow[]  @relation("followers")
+  conversationParticipants ConversationParticipant[]
+  messages          Message[]
 }
 
 // ==========================================
@@ -62,6 +71,7 @@ model Dog {
   
   healthRecords HealthRecord[]
   questions     QuestionDog[]
+  socialPostDogs SocialPostDog[]
 
   @@index([ownerId])
 }
@@ -336,4 +346,120 @@ model SavedAlert {
   @@unique([userId, alertId])
   @@index([userId])
   @@index([alertId])
+}
+
+// ==========================================
+// Social Feed & Community
+// ==========================================
+
+model SocialPost {
+  id        String   @id @default(cuid())
+  content   String
+  images    String?  // JSON array of image URLs
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  taggedDogs SocialPostDog[]
+  likes      SocialLike[]
+  comments   SocialComment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model SocialPostDog {
+  id        String     @id @default(cuid())
+  postId    String
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  dogId     String
+  dog       Dog        @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, dogId])
+  @@index([postId])
+  @@index([dogId])
+}
+
+model SocialLike {
+  id        String     @id @default(cuid())
+  postId    String
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model SocialComment {
+  id        String     @id @default(cuid())
+  content   String
+  postId    String
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentId  String?    // For nested replies
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  follower    User     @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// ==========================================
+// Direct Messaging
+// ==========================================
+
+model Conversation {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt       DateTime     @default(now())
+  
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content        String
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
 }
