@@ -93,13 +93,29 @@ export default function MediaUpload({
                 try {
                     const result = await compressImage(file);
                     const preview = URL.createObjectURL(result.blob);
-                    processedItems.push({
-                        id,
-                        file,
-                        preview,
-                        type: 'image',
-                        compressed: result.blob,
-                    });
+
+                    // Upload immediately
+                    const formData = new FormData();
+                    const uploadFile = new File([result.blob], `image_${id}.webp`, { type: 'image/webp' });
+                    formData.append('file', uploadFile);
+                    formData.append('type', 'post');
+
+                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        processedItems.push({
+                            id,
+                            file,
+                            preview,
+                            type: 'image',
+                            compressed: result.blob,
+                            uploaded: true,
+                            url: data.data.url,
+                        });
+                    } else {
+                        setError(`Failed to upload "${file.name}": ${data.error}`);
+                    }
                 } catch (err) {
                     console.error('Failed to process image:', err);
                     setError(`Failed to process "${file.name}"`);
@@ -113,14 +129,45 @@ export default function MediaUpload({
                     }
                     const thumbnail = await generateVideoThumbnail(file);
                     const preview = URL.createObjectURL(file);
-                    processedItems.push({
-                        id,
-                        file,
-                        preview,
-                        type: 'video',
-                        thumbnail,
-                        duration: validation.duration,
-                    });
+
+                    // Upload video immediately
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('type', 'post');
+
+                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        // Upload thumbnail
+                        let thumbnailUrl: string | undefined;
+                        const thumbFormData = new FormData();
+                        const thumbFile = new File([thumbnail], `thumb_${id}.webp`, { type: 'image/webp' });
+                        thumbFormData.append('file', thumbFile);
+                        thumbFormData.append('type', 'post');
+
+                        const thumbRes = await fetch('/api/upload', { method: 'POST', body: thumbFormData });
+                        const thumbData = await thumbRes.json();
+                        if (thumbData.success) {
+                            thumbnailUrl = thumbData.data.url;
+                        }
+
+                        processedItems.push({
+                            id,
+                            file,
+                            preview,
+                            type: 'video',
+                            thumbnail,
+                            duration: validation.duration,
+                            uploaded: true,
+                            url: data.data.url,
+                        });
+
+                        // Immediately notify parent of video upload
+                        onMediaChange([], data.data.url, thumbnailUrl);
+                    } else {
+                        setError(`Failed to upload "${file.name}": ${data.error}`);
+                    }
                 } catch (err) {
                     console.error('Failed to process video:', err);
                     setError(`Failed to process "${file.name}"`);
@@ -128,9 +175,17 @@ export default function MediaUpload({
             }
         }
 
-        setMediaItems(prev => [...prev, ...processedItems]);
+        // Update state and notify parent
+        const allItems = [...mediaItems, ...processedItems];
+        setMediaItems(allItems);
+
+        // Collect all image URLs and notify parent
+        const imageUrls = allItems.filter(m => m.type === 'image' && m.url).map(m => m.url!);
+        const videoItem = allItems.find(m => m.type === 'video' && m.url);
+        onMediaChange(imageUrls, videoItem?.url);
+
         setIsProcessing(false);
-    }, [disabled, isProcessing, mediaItems, maxImages]);
+    }, [disabled, isProcessing, mediaItems, maxImages, onMediaChange]);
 
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -153,13 +208,19 @@ export default function MediaUpload({
     };
 
     const removeItem = (id: string) => {
-        setMediaItems(prev => {
-            const item = prev.find(m => m.id === id);
-            if (item) {
-                URL.revokeObjectURL(item.preview);
-            }
-            return prev.filter(m => m.id !== id);
-        });
+        const updatedItems = mediaItems.filter(m => m.id !== id);
+        const removedItem = mediaItems.find(m => m.id === id);
+
+        if (removedItem) {
+            URL.revokeObjectURL(removedItem.preview);
+        }
+
+        setMediaItems(updatedItems);
+
+        // Notify parent of remaining items
+        const imageUrls = updatedItems.filter(m => m.type === 'image' && m.url).map(m => m.url!);
+        const videoItem = updatedItems.find(m => m.type === 'video' && m.url);
+        onMediaChange(imageUrls, videoItem?.url);
     };
 
     // Upload all media and call onMediaChange with URLs
