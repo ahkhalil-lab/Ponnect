@@ -153,6 +153,67 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             )
         }
 
+        const body = await request.json()
+        const { isAccepted, validateAiAnswer } = body
+
+        // Handle AI answer validation by verified experts
+        if (validateAiAnswer === true) {
+            // Check if this is an AI-generated answer
+            if (!answer.isAiGenerated) {
+                return NextResponse.json(
+                    { success: false, error: 'This is not an AI-generated answer' },
+                    { status: 400 }
+                )
+            }
+
+            // Check if already validated
+            if (answer.aiValidatedBy) {
+                return NextResponse.json(
+                    { success: false, error: 'This AI answer has already been validated' },
+                    { status: 400 }
+                )
+            }
+
+            // Only verified experts or admins can validate AI answers
+            const isVerifiedExpert = (user.role === 'EXPERT' && user.isVerified) || user.role === 'ADMIN'
+            if (!isVerifiedExpert) {
+                return NextResponse.json(
+                    { success: false, error: 'Only verified experts can validate AI answers' },
+                    { status: 403 }
+                )
+            }
+
+            const validated = await prisma.expertAnswer.update({
+                where: { id },
+                data: {
+                    aiValidatedBy: user.id,
+                    aiValidatedAt: new Date(),
+                },
+                include: {
+                    expert: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatar: true,
+                            role: true,
+                            expertType: true,
+                            isVerified: true,
+                        },
+                    },
+                },
+            })
+
+            return NextResponse.json({
+                success: true,
+                data: validated,
+                validatedBy: {
+                    id: user.id,
+                    name: user.name,
+                },
+            })
+        }
+
+        // Handle accepting an answer (existing logic)
         // Only the question author can accept an answer
         if (answer.question.authorId !== user.id) {
             return NextResponse.json(
@@ -160,9 +221,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 { status: 403 }
             )
         }
-
-        const body = await request.json()
-        const { isAccepted } = body
 
         // If accepting this answer, unaccept all other answers for the question
         if (isAccepted) {
@@ -197,7 +255,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             data: updated,
         })
     } catch (error) {
-        console.error('Answer accept error:', error)
+        console.error('Answer update error:', error)
         return NextResponse.json(
             { success: false, error: 'Failed to update answer' },
             { status: 500 }

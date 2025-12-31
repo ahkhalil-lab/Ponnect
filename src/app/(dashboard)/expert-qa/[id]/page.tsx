@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useState, use, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
@@ -21,6 +21,9 @@ interface Answer {
     helpfulCount: number
     createdAt: string
     expert: Expert
+    isAiGenerated: boolean
+    aiValidatedBy: string | null
+    aiValidatedAt: string | null
 }
 
 interface QuestionDog {
@@ -55,6 +58,7 @@ interface Question {
 
 interface CurrentUser {
     id: string
+    name: string
     role: string
     expertType: string | null
     isVerified: boolean
@@ -72,6 +76,11 @@ export default function QuestionDetailPage({ params }: Props) {
     const [isLoading, setIsLoading] = useState(true)
     const [newAnswer, setNewAnswer] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isGeneratingAI, setIsGeneratingAI] = useState(false)
+    const [validatingAnswerId, setValidatingAnswerId] = useState<string | null>(null)
+
+    // Ref to prevent duplicate AI generation triggers
+    const aiGenerationTriggered = useRef(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -86,6 +95,13 @@ export default function QuestionDetailPage({ params }: Props) {
 
                 if (questionData.success) {
                     setQuestion(questionData.data)
+
+                    // Trigger AI answer generation if no answers exist
+                    const hasAnswers = questionData.data.answers && questionData.data.answers.length > 0
+                    const questionStatus = questionData.data.status
+                    if (!hasAnswers && questionStatus !== 'CLOSED') {
+                        triggerAIAnswer(questionData.data.id)
+                    }
                 } else {
                     router.push('/expert-qa')
                     return
@@ -94,6 +110,7 @@ export default function QuestionDetailPage({ params }: Props) {
                 if (authData.success) {
                     setCurrentUser({
                         id: authData.data.id,
+                        name: authData.data.name,
                         role: authData.data.role,
                         expertType: authData.data.expertType,
                         isVerified: authData.data.isVerified,
@@ -103,6 +120,34 @@ export default function QuestionDetailPage({ params }: Props) {
                 console.error('Failed to fetch question:', error)
             } finally {
                 setIsLoading(false)
+            }
+        }
+
+        const triggerAIAnswer = async (questionId: string) => {
+            // Prevent duplicate triggers using ref
+            if (aiGenerationTriggered.current) {
+                return
+            }
+            aiGenerationTriggered.current = true
+
+            setIsGeneratingAI(true)
+            try {
+                const res = await fetch(`/api/expert-qa/questions/${questionId}/ai-answer`, {
+                    method: 'POST',
+                })
+                const data = await res.json()
+                if (data.success && data.data) {
+                    // Refresh question to get the new AI answer
+                    const refreshRes = await fetch(`/api/expert-qa/questions/${questionId}`)
+                    const refreshData = await refreshRes.json()
+                    if (refreshData.success) {
+                        setQuestion(refreshData.data)
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to generate AI answer:', error)
+            } finally {
+                setIsGeneratingAI(false)
             }
         }
 
@@ -211,6 +256,35 @@ export default function QuestionDetailPage({ params }: Props) {
             }
         } catch (error) {
             console.error('Close question error:', error)
+        }
+    }
+
+    const handleValidateAIAnswer = async (answerId: string) => {
+        if (!isExpert) return
+
+        setValidatingAnswerId(answerId)
+        try {
+            const res = await fetch(`/api/expert-qa/answers/${answerId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ validateAiAnswer: true }),
+            })
+
+            const data = await res.json()
+            if (data.success && question && currentUser) {
+                setQuestion({
+                    ...question,
+                    answers: question.answers.map(a =>
+                        a.id === answerId
+                            ? { ...a, aiValidatedBy: currentUser.id, aiValidatedAt: new Date().toISOString() }
+                            : a
+                    ),
+                })
+            }
+        } catch (error) {
+            console.error('Validate AI answer error:', error)
+        } finally {
+            setValidatingAnswerId(null)
         }
     }
 
@@ -335,16 +409,37 @@ export default function QuestionDetailPage({ params }: Props) {
             <section className={styles.answersSection}>
                 <h2>{question._count.answers} Answer{question._count.answers !== 1 ? 's' : ''}</h2>
 
+                {/* AI Generating Indicator */}
+                {isGeneratingAI && (
+                    <div className={`card ${styles.aiGenerating}`}>
+                        <div className="spinner spinner-sm"></div>
+                        <p>🤖 Generating AI preliminary answer...</p>
+                    </div>
+                )}
+
                 {/* Accepted Answer First */}
                 {acceptedAnswer && (
-                    <div className={`card ${styles.answerCard} ${styles.accepted}`}>
+                    <div className={`card ${styles.answerCard} ${styles.accepted} ${acceptedAnswer.isAiGenerated ? styles.aiAnswer : ''}`}>
                         <div className={styles.acceptedBadge}>✓ Accepted Answer</div>
+                        {acceptedAnswer.isAiGenerated && (
+                            <div className={styles.aiBadgeContainer}>
+                                <span className={styles.aiBadge}>🤖 AI-Generated</span>
+                                {acceptedAnswer.aiValidatedBy ? (
+                                    <span className={styles.endorsedBadge}>✓ Expert Endorsed</span>
+                                ) : (
+                                    <span className={styles.pendingEndorsement}>⏳ Expert endorsement pending</span>
+                                )}
+                            </div>
+                        )}
                         <AnswerContent
                             answer={acceptedAnswer}
                             isAuthor={isAuthor}
+                            isExpert={isExpert}
                             currentUser={currentUser}
                             onAccept={handleAcceptAnswer}
                             onHelpful={handleHelpful}
+                            onValidateAI={handleValidateAIAnswer}
+                            isValidating={validatingAnswerId === acceptedAnswer.id}
                             formatDate={formatDate}
                         />
                     </div>
@@ -352,20 +447,33 @@ export default function QuestionDetailPage({ params }: Props) {
 
                 {/* Other Answers */}
                 {otherAnswers.map((answer) => (
-                    <div key={answer.id} className={`card ${styles.answerCard}`}>
+                    <div key={answer.id} className={`card ${styles.answerCard} ${answer.isAiGenerated ? styles.aiAnswer : ''}`}>
+                        {answer.isAiGenerated && (
+                            <div className={styles.aiBadgeContainer}>
+                                <span className={styles.aiBadge}>🤖 AI-Generated Preliminary Answer</span>
+                                {answer.aiValidatedBy ? (
+                                    <span className={styles.endorsedBadge}>✓ Expert Endorsed</span>
+                                ) : (
+                                    <span className={styles.pendingEndorsement}>⏳ Expert endorsement pending</span>
+                                )}
+                            </div>
+                        )}
                         <AnswerContent
                             answer={answer}
                             isAuthor={isAuthor}
+                            isExpert={isExpert}
                             currentUser={currentUser}
                             onAccept={handleAcceptAnswer}
                             onHelpful={handleHelpful}
+                            onValidateAI={handleValidateAIAnswer}
+                            isValidating={validatingAnswerId === answer.id}
                             formatDate={formatDate}
                         />
                     </div>
                 ))}
 
                 {/* No Answers Yet */}
-                {question.answers.length === 0 && (
+                {question.answers.length === 0 && !isGeneratingAI && (
                     <div className={`card ${styles.noAnswers}`}>
                         <p>No answers yet. {isExpert ? 'Be the first expert to answer!' : 'Check back soon for expert responses.'}</p>
                     </div>
@@ -407,16 +515,22 @@ export default function QuestionDetailPage({ params }: Props) {
 function AnswerContent({
     answer,
     isAuthor,
+    isExpert,
     currentUser,
     onAccept,
     onHelpful,
+    onValidateAI,
+    isValidating,
     formatDate,
 }: {
     answer: Answer
     isAuthor: boolean | undefined
+    isExpert: boolean | undefined
     currentUser: CurrentUser | null
     onAccept: (id: string) => void
     onHelpful: (id: string, helpful: boolean) => void
+    onValidateAI: (id: string) => void
+    isValidating: boolean
     formatDate: (date: string) => string
 }) {
     return (
@@ -450,6 +564,14 @@ function AnswerContent({
                 ))}
             </div>
 
+            {/* AI Disclaimer */}
+            {answer.isAiGenerated && (
+                <div className={styles.aiDisclaimer}>
+                    <span>⚠️</span>
+                    <span>This is an AI-generated preliminary answer. For critical health concerns, always consult a qualified veterinarian.</span>
+                </div>
+            )}
+
             <div className={styles.answerActions}>
                 <button
                     onClick={() => onHelpful(answer.id, true)}
@@ -466,7 +588,18 @@ function AnswerContent({
                         ✓ Accept Answer
                     </button>
                 )}
+                {/* Expert can endorse AI answers */}
+                {isExpert && answer.isAiGenerated && !answer.aiValidatedBy && (
+                    <button
+                        onClick={() => onValidateAI(answer.id)}
+                        className={`btn btn-sm btn-success ${styles.endorseButton}`}
+                        disabled={isValidating}
+                    >
+                        {isValidating ? 'Endorsing...' : '✓ Endorse This Answer'}
+                    </button>
+                )}
             </div>
         </>
     )
 }
+

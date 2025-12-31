@@ -261,7 +261,7 @@ export async function generateAlertGuidance(alert: AlertContext): Promise<string
         guidanceCache.set(cacheKey, {
             guidance: aiGuidance,
             generatedAt: new Date().toISOString(),
-            model: 'gemini-2.0-flash',
+            model: 'gemini-pro-latest',
         })
         return aiGuidance
     }
