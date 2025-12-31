@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import MediaUpload from '@/components/MediaUpload'
+import MediaGallery from '@/components/MediaGallery'
 
 interface Dog {
     id: string
@@ -19,6 +21,8 @@ interface Post {
     id: string
     content: string
     images: string[]
+    video: string | null
+    videoThumbnail: string | null
     createdAt: string
     author: {
         id: string
@@ -28,6 +32,8 @@ interface Post {
     }
     taggedDogs: TaggedDog[]
     isLiked: boolean
+    isSaved: boolean
+    isOwner: boolean
     _count: {
         likes: number
         comments: number
@@ -66,6 +72,10 @@ export default function FeedPage() {
     const [page, setPage] = useState(1)
     const [hasMore, setHasMore] = useState(true)
     const [loadingMore, setLoadingMore] = useState(false)
+    const [pendingMedia, setPendingMedia] = useState<{ imageUrls: string[]; videoUrl?: string; videoThumbnail?: string }>({ imageUrls: [] })
+    const [showMediaUpload, setShowMediaUpload] = useState(false)
+    const [likedPostAnimation, setLikedPostAnimation] = useState<string | null>(null)
+    const mediaUploadRef = useRef<{ uploadAll: () => Promise<{ success: boolean; imageUrls: string[]; videoUrl?: string; videoThumbnail?: string }> }>(null)
 
     const fetchPosts = useCallback(async (pageNum: number, type: string, append: boolean = false) => {
         try {
@@ -115,7 +125,7 @@ export default function FeedPage() {
     }
 
     const handleCreatePost = async () => {
-        if (!newPostContent.trim() || isPosting) return
+        if ((!newPostContent.trim() && pendingMedia.imageUrls.length === 0 && !pendingMedia.videoUrl) || isPosting) return
 
         setIsPosting(true)
         try {
@@ -125,6 +135,9 @@ export default function FeedPage() {
                 body: JSON.stringify({
                     content: newPostContent,
                     dogIds: selectedDogIds.length > 0 ? selectedDogIds : undefined,
+                    images: pendingMedia.imageUrls.length > 0 ? pendingMedia.imageUrls : undefined,
+                    video: pendingMedia.videoUrl || undefined,
+                    videoThumbnail: pendingMedia.videoThumbnail || undefined,
                 }),
             })
             const data = await res.json()
@@ -134,11 +147,65 @@ export default function FeedPage() {
                 setNewPostContent('')
                 setSelectedDogIds([])
                 setShowDogSelector(false)
+                setPendingMedia({ imageUrls: [] })
+                setShowMediaUpload(false)
             }
         } catch (error) {
             console.error('Failed to create post:', error)
         } finally {
             setIsPosting(false)
+        }
+    }
+
+    const handleMediaChange = (imageUrls: string[], videoUrl?: string, videoThumbnail?: string) => {
+        setPendingMedia({ imageUrls, videoUrl, videoThumbnail })
+    }
+
+    const handleDoubleTapLike = async (postId: string) => {
+        const post = posts.find(p => p.id === postId)
+        if (post && !post.isLiked) {
+            await handleLike(postId)
+            setLikedPostAnimation(postId)
+            setTimeout(() => setLikedPostAnimation(null), 1000)
+        }
+    }
+
+    const handleSavePost = async (postId: string) => {
+        try {
+            const res = await fetch(`/api/social/posts/${postId}/save`, { method: 'POST' })
+            const data = await res.json()
+            if (data.success) {
+                setPosts(prev => prev.map(post =>
+                    post.id === postId ? { ...post, isSaved: data.data.isSaved } : post
+                ))
+            }
+        } catch (error) {
+            console.error('Failed to save post:', error)
+        }
+    }
+
+    const handleSharePost = async (postId: string) => {
+        const url = `${window.location.origin}/feed?post=${postId}`
+        try {
+            await navigator.clipboard.writeText(url)
+            alert('Link copied to clipboard!')
+        } catch {
+            // Fallback for older browsers
+            prompt('Copy this link:', url)
+        }
+    }
+
+    const handleDeletePost = async (postId: string) => {
+        if (!confirm('Are you sure you want to delete this post?')) return
+
+        try {
+            const res = await fetch(`/api/social/posts/${postId}`, { method: 'DELETE' })
+            const data = await res.json()
+            if (data.success) {
+                setPosts(prev => prev.filter(post => post.id !== postId))
+            }
+        } catch (error) {
+            console.error('Failed to delete post:', error)
         }
     }
 
@@ -322,6 +389,12 @@ export default function FeedPage() {
 
                 <div className={styles.composerBottom}>
                     <div className={styles.composerActions}>
+                        <button
+                            className={`btn btn-outline btn-sm ${showMediaUpload ? 'btn-active' : ''}`}
+                            onClick={() => setShowMediaUpload(!showMediaUpload)}
+                        >
+                            📷 Photo/Video
+                        </button>
                         {userDogs.length > 0 && (
                             <button
                                 className="btn btn-outline btn-sm"
@@ -338,12 +411,22 @@ export default function FeedPage() {
                         <button
                             className="btn btn-primary"
                             onClick={handleCreatePost}
-                            disabled={!newPostContent.trim() || isPosting}
+                            disabled={(!newPostContent.trim() && pendingMedia.imageUrls.length === 0 && !pendingMedia.videoUrl) || isPosting}
                         >
                             {isPosting ? 'Posting...' : 'Post'}
                         </button>
                     </div>
                 </div>
+
+                {showMediaUpload && (
+                    <div className={styles.mediaUploadSection}>
+                        <MediaUpload
+                            onMediaChange={handleMediaChange}
+                            maxImages={4}
+                            disabled={isPosting}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Feed */}
@@ -382,12 +465,14 @@ export default function FeedPage() {
 
                                 <div className={styles.postContent}>{post.content}</div>
 
-                                {post.images && post.images.length > 0 && (
-                                    <div className={`${styles.postImages} ${post.images.length === 1 ? styles.single : post.images.length === 2 ? styles.double : styles.triple}`}>
-                                        {post.images.slice(0, 3).map((img, idx) => (
-                                            <img key={idx} src={img} alt="" />
-                                        ))}
-                                    </div>
+                                {(post.images?.length > 0 || post.video) && (
+                                    <MediaGallery
+                                        images={post.images || []}
+                                        video={post.video || undefined}
+                                        videoThumbnail={post.videoThumbnail || undefined}
+                                        onDoubleTap={() => handleDoubleTapLike(post.id)}
+                                        showLikeAnimation={likedPostAnimation === post.id}
+                                    />
                                 )}
 
                                 {post.taggedDogs.length > 0 && (
@@ -413,6 +498,29 @@ export default function FeedPage() {
                                     >
                                         💬 {post._count.comments}
                                     </button>
+                                    <button
+                                        className={`${styles.postAction} ${post.isSaved ? styles.postActionSaved : ''}`}
+                                        onClick={() => handleSavePost(post.id)}
+                                        title={post.isSaved ? 'Unsave' : 'Save'}
+                                    >
+                                        {post.isSaved ? '🔖' : '📑'}
+                                    </button>
+                                    <button
+                                        className={styles.postAction}
+                                        onClick={() => handleSharePost(post.id)}
+                                        title="Share"
+                                    >
+                                        📤
+                                    </button>
+                                    {post.isOwner && (
+                                        <button
+                                            className={`${styles.postAction} ${styles.postActionDelete}`}
+                                            onClick={() => handleDeletePost(post.id)}
+                                            title="Delete"
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
                                 </div>
 
                                 {expandedComments.has(post.id) && (
@@ -467,8 +575,9 @@ export default function FeedPage() {
                             </div>
                         )}
                     </>
-                )}
-            </div>
-        </div>
+                )
+                }
+            </div >
+        </div >
     )
 }

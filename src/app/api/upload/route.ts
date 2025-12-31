@@ -4,9 +4,11 @@ import { join } from 'path';
 import { getCurrentUser } from '@/lib/auth';
 import { existsSync } from 'fs';
 
-// Configure max file size (5MB)
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+// Configure max file sizes
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 
 export async function POST(request: NextRequest) {
     try {
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
 
         const formData = await request.formData();
         const file = formData.get('file') as File | null;
-        const type = formData.get('type') as string; // 'avatar' or 'dog'
+        const type = formData.get('type') as string; // 'avatar', 'dog', or 'post'
         const entityId = formData.get('entityId') as string | null; // dog id if type is 'dog'
 
         if (!file) {
@@ -30,25 +32,30 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (!type || !['avatar', 'dog'].includes(type)) {
+        if (!type || !['avatar', 'dog', 'post'].includes(type)) {
             return NextResponse.json(
                 { success: false, error: 'Invalid upload type' },
                 { status: 400 }
             );
         }
 
+        // Determine if it's a video or image
+        const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
+        const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
+
         // Validate file type
-        if (!ALLOWED_TYPES.includes(file.type)) {
+        if (!isVideo && !isImage) {
             return NextResponse.json(
-                { success: false, error: 'Invalid file type. Please upload JPEG, PNG, WebP, or GIF.' },
+                { success: false, error: 'Invalid file type. Please upload JPEG, PNG, WebP, GIF, MP4, or WebM.' },
                 { status: 400 }
             );
         }
 
         // Validate file size
-        if (file.size > MAX_FILE_SIZE) {
+        const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+        if (file.size > maxSize) {
             return NextResponse.json(
-                { success: false, error: 'File too large. Maximum size is 5MB.' },
+                { success: false, error: `File too large. Maximum size is ${isVideo ? '50MB' : '10MB'}.` },
                 { status: 400 }
             );
         }

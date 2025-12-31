@@ -317,6 +317,30 @@
     color: #e0245e;
 }
 
+.postActionSaved {
+    color: var(--primary);
+}
+
+.postActionSaved:hover {
+    color: var(--primary);
+}
+
+.postActionDelete {
+    color: var(--text-muted);
+}
+
+.postActionDelete:hover {
+    color: #e0245e;
+    background: rgba(224, 36, 94, 0.1);
+}
+
+/* Media Upload Section */
+.mediaUploadSection {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
 /* Comments section */
 .commentsSection {
     border-top: 1px solid var(--border);

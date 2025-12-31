@@ -45,6 +45,7 @@ model User {
   socialPosts       SocialPost[]
   socialLikes       SocialLike[]
   socialComments    SocialComment[]
+  savedPosts        SavedPost[]
   followers         Follow[]  @relation("following")
   following         Follow[]  @relation("followers")
   conversationParticipants ConversationParticipant[]
@@ -356,6 +357,8 @@ model SocialPost {
   id        String   @id @default(cuid())
   content   String
   images    String?  // JSON array of image URLs
+  video     String?  // Video URL (if post has video instead of images)
+  videoThumbnail String? // Thumbnail for video
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -364,9 +367,23 @@ model SocialPost {
   taggedDogs SocialPostDog[]
   likes      SocialLike[]
   comments   SocialComment[]
+  savedBy    SavedPost[]
 
   @@index([authorId])
   @@index([createdAt])
+}
+
+model SavedPost {
+  id        String     @id @default(cuid())
+  postId    String
+  post      SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model SocialPostDog {

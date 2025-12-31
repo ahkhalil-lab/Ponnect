@@ -68,6 +68,10 @@ export async function GET(request: Request) {
                         where: { userId: user.id },
                         select: { id: true },
                     },
+                    savedBy: {
+                        where: { userId: user.id },
+                        select: { id: true },
+                    },
                     _count: {
                         select: {
                             likes: true,
@@ -79,11 +83,14 @@ export async function GET(request: Request) {
             prisma.socialPost.count({ where }),
         ])
 
-        // Transform posts to include isLiked flag
+        // Transform posts to include isLiked, isSaved, isOwner flags
         const transformedPosts = posts.map(post => ({
             ...post,
             isLiked: post.likes.length > 0,
+            isSaved: post.savedBy.length > 0,
+            isOwner: post.authorId === user.id,
             likes: undefined, // Remove raw likes array
+            savedBy: undefined, // Remove raw savedBy array
             images: post.images ? JSON.parse(post.images) : [],
         }))
 
@@ -119,11 +126,12 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { content, images, dogIds } = body
+        const { content, images, video, videoThumbnail, dogIds } = body
 
-        if (!content || content.trim().length === 0) {
+        // Allow empty content if media is present
+        if ((!content || content.trim().length === 0) && !images?.length && !video) {
             return NextResponse.json(
-                { success: false, error: 'Content is required' },
+                { success: false, error: 'Content or media is required' },
                 { status: 400 }
             )
         }
@@ -155,8 +163,10 @@ export async function POST(request: Request) {
 
         const post = await prisma.socialPost.create({
             data: {
-                content: content.trim(),
+                content: content?.trim() || '',
                 images: images && images.length > 0 ? JSON.stringify(images) : null,
+                video: video || null,
+                videoThumbnail: videoThumbnail || null,
                 authorId: user.id,
                 taggedDogs: dogIds && dogIds.length > 0
                     ? {
@@ -201,6 +211,8 @@ export async function POST(request: Request) {
             data: {
                 ...post,
                 isLiked: false,
+                isSaved: false,
+                isOwner: true,
                 images: post.images ? JSON.parse(post.images) : [],
             },
         }, { status: 201 })
