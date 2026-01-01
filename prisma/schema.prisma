@@ -50,6 +50,11 @@ model User {
   following         Follow[]  @relation("followers")
   conversationParticipants ConversationParticipant[]
   messages          Message[]
+  
+  // Service Provider features
+  serviceProvider   ServiceProvider?
+  providerReviews   ProviderReview[]
+  savedProviders    SavedProvider[]
 }
 
 // ==========================================
@@ -479,4 +484,108 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([createdAt])
+}
+
+// ==========================================
+// Service Provider Directory
+// ==========================================
+
+model ServiceCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  icon        String   // Emoji or icon name
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  providers   ServiceProvider[]
+}
+
+model ServiceProvider {
+  id             String   @id @default(cuid())
+  userId         String   @unique // Owner account (one provider per user)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName   String
+  slug           String   @unique
+  description    String
+  logo           String?
+  coverPhoto     String?
+  photos         String?  // JSON array of photo URLs
+  categoryId     String
+  category       ServiceCategory @relation(fields: [categoryId], references: [id])
+  
+  // Location
+  suburb         String
+  city           String   @default("Brisbane")
+  state          String   @default("QLD")
+  postcode       String
+  serviceRadius  Int      @default(10) // km
+  
+  // Contact
+  phone          String?
+  email          String
+  website        String?
+  bookingUrl     String?
+  
+  // Business Details
+  priceRange     String?  // $, $$, $$$
+  dogSizes       String?  // JSON: ["small", "medium", "large"]
+  availability   String?  // JSON: schedule/hours
+  services       String?  // JSON: list of specific services offered
+  
+  // Status
+  isVerified     Boolean  @default(false)
+  isFeatured     Boolean  @default(false)
+  featuredUntil  DateTime?
+  status         String   @default("pending") // pending, active, suspended
+  
+  // Metrics
+  viewCount      Int      @default(0)
+  contactCount   Int      @default(0)
+  averageRating  Float    @default(0)
+  reviewCount    Int      @default(0)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  reviews        ProviderReview[]
+  savedBy        SavedProvider[]
+  
+  @@index([categoryId])
+  @@index([city, status])
+  @@index([isFeatured])
+  @@index([status])
+  @@index([averageRating])
+}
+
+model ProviderReview {
+  id          String   @id @default(cuid())
+  providerId  String
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating      Int      // 1-5
+  content     String
+  photos      String?  // JSON array
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([providerId, userId])
+  @@index([providerId])
+  @@index([userId])
+}
+
+model SavedProvider {
+  id          String   @id @default(cuid())
+  providerId  String
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  
+  @@unique([providerId, userId])
+  @@index([providerId])
+  @@index([userId])
 }

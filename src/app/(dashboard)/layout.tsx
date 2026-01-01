@@ -84,6 +84,7 @@ export default function DashboardLayout({
         { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
         { href: '/feed', label: 'Feed', icon: '📱' },
         { href: '/community', label: 'Community', icon: '👥' },
+        { href: '/services', label: 'Services', icon: '🐾' },
         { href: '/messages', label: 'Messages', icon: '💬', badge: unreadMessageCount > 0 ? unreadMessageCount : undefined },
         { href: '/forums', label: 'Forums', icon: '📝' },
         { href: '/events', label: 'Events', icon: '📅' },

@@ -1,0 +1,366 @@
+.page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 1rem 2rem;
+}
+
+.page h1 {
+    margin: 0 0 0.5rem;
+    text-align: center;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+/* Progress */
+.progress {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.progressStep {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+}
+
+.progressStep.active {
+    color: var(--primary);
+}
+
+.progressStep.complete {
+    color: #10b981;
+}
+
+.stepNumber {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.progressStep.active .stepNumber {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.progressStep.complete .stepNumber {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+.stepLabel {
+    font-size: 0.85rem;
+    display: none;
+}
+
+@media (min-width: 600px) {
+    .stepLabel {
+        display: inline;
+    }
+}
+
+/* Error */
+.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+/* Form */
+.form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.stepContent {
+    min-height: 300px;
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 500px) {
+    .formRow {
+        grid-template-columns: 1fr;
+    }
+}
+
+.input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--background);
+    transition: border-color 0.2s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    background: var(--background);
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.charCount {
+    display: block;
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Category Grid */
+.categoryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.categoryOption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: var(--background);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.categoryOption:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.categoryOption.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.categoryIcon {
+    font-size: 2rem;
+}
+
+/* Range Input */
+.range {
+    width: 100%;
+    accent-color: var(--primary);
+}
+
+.rangeValue {
+    display: block;
+    text-align: center;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* Price Options */
+.priceOptions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.priceOption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: var(--background);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.priceOption:hover {
+    border-color: var(--primary);
+}
+
+.priceOption.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.priceSymbol {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.priceLabel {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Checkboxes */
+.checkboxGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.checkbox:hover {
+    background: var(--surface-hover);
+}
+
+.checkbox input {
+    accent-color: var(--primary);
+    width: 18px;
+    height: 18px;
+}
+
+/* Service Tags */
+.serviceInput {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.addBtn {
+    padding: 0.75rem 1rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.serviceTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.serviceTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.serviceTag button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--primary);
+    padding: 0;
+    margin-left: 0.25rem;
+    line-height: 1;
+}
+
+/* Form Actions */
+.formActions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.backBtn {
+    padding: 0.75rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.nextBtn,
+.submitBtn {
+    padding: 0.75rem 2rem;
+    background: #7c3aed;
+    background: var(--primary, #7c3aed);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: auto;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+    transition: all 0.2s;
+}
+
+.nextBtn:hover,
+.submitBtn:hover {
+    background: #6d28d9;
+    background: var(--primary-dark, #6d28d9);
+    transform: translateY(-2px);
+}
+
+.nextBtn:disabled,
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}

@@ -387,7 +387,7 @@ export default function MediaUpload({
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+                accept="image/*,video/*,.mp4,.webm,.mov,.m4v,.3gp,.avi"
                 multiple
                 onChange={handleFileInputChange}
                 className={styles.hiddenInput}

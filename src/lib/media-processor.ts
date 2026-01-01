@@ -255,9 +255,32 @@ export function isImageFile(file: File): boolean {
 
 /**
  * Check if file is a supported video
+ * Mobile browsers often report different MIME types, so we also check file extension
  */
 export function isVideoFile(file: File): boolean {
-    return ['video/mp4', 'video/webm', 'video/quicktime'].includes(file.type);
+    // Supported MIME types (including mobile-specific ones)
+    const supportedMimeTypes = [
+        'video/mp4',
+        'video/webm',
+        'video/quicktime',
+        'video/x-m4v',
+        'video/mpeg',
+        'video/3gpp',
+        'video/3gpp2',
+        'video/x-matroska',
+        'video/ogg',
+        'video/avi',
+        'video/x-msvideo',
+    ];
+
+    if (supportedMimeTypes.includes(file.type)) {
+        return true;
+    }
+
+    // Fallback: check file extension (mobile browsers may not set correct MIME type)
+    const videoExtensions = ['.mp4', '.webm', '.mov', '.m4v', '.mpeg', '.mpg', '.3gp', '.3g2', '.mkv', '.ogg', '.avi'];
+    const fileName = file.name.toLowerCase();
+    return videoExtensions.some(ext => fileName.endsWith(ext));
 }
 
 /**

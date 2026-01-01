@@ -8,7 +8,20 @@ import { existsSync } from 'fs';
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+// Mobile browsers often use different MIME types for video
+const ALLOWED_VIDEO_TYPES = [
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
+    'video/x-m4v',
+    'video/mpeg',
+    'video/3gpp',
+    'video/3gpp2',
+    'video/x-matroska',
+    'video/ogg',
+    'video/avi',
+    'video/x-msvideo',
+];
 
 export async function POST(request: NextRequest) {
     try {
@@ -40,13 +53,23 @@ export async function POST(request: NextRequest) {
         }
 
         // Determine if it's a video or image
-        const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
-        const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
+        let isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
+        let isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
+
+        // Fallback: check file extension (mobile browsers may not set correct MIME type)
+        if (!isVideo && !isImage) {
+            const fileName = file.name.toLowerCase();
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+            const videoExtensions = ['.mp4', '.webm', '.mov', '.m4v', '.mpeg', '.mpg', '.3gp', '.3g2', '.mkv', '.avi'];
+
+            isImage = imageExtensions.some(ext => fileName.endsWith(ext));
+            isVideo = videoExtensions.some(ext => fileName.endsWith(ext));
+        }
 
         // Validate file type
         if (!isVideo && !isImage) {
             return NextResponse.json(
-                { success: false, error: 'Invalid file type. Please upload JPEG, PNG, WebP, GIF, MP4, or WebM.' },
+                { success: false, error: `Invalid file type "${file.type}". Please upload an image or video file.` },
                 { status: 400 }
             );
         }
