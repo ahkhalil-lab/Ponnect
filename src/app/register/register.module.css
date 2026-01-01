@@ -79,7 +79,7 @@
     grid-template-columns: 1fr;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 560px) {
     .row {
         grid-template-columns: repeat(2, 1fr);
     }

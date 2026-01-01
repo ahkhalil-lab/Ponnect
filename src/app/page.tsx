@@ -1,7 +1,25 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [user, setUser] = useState<{ name: string } | null>(null)
+
+  useEffect(() => {
+    // Check if user is logged in
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setUser(data.data)
+        }
+      })
+      .catch(() => { })
+  }, [])
+
   return (
     <div className={styles.page}>
       {/* Header */}
@@ -18,12 +36,55 @@ export default function Home() {
               <Link href="/expert-qa" className={styles.navLink}>Expert Q&A</Link>
             </div>
             <div className={styles.authButtons}>
-              <Link href="/login" className="btn btn-ghost">Log In</Link>
-              <Link href="/register" className="btn btn-primary">Join Free</Link>
+              {user ? (
+                <Link href="/dashboard" className="btn btn-primary">Dashboard</Link>
+              ) : (
+                <>
+                  <Link href="/login" className="btn btn-ghost">Log In</Link>
+                  <Link href="/register" className="btn btn-primary">Join Free</Link>
+                </>
+              )}
             </div>
+            {/* Hamburger Menu Button */}
+            <button
+              className={`${styles.menuButton} ${mobileMenuOpen ? styles.menuButtonOpen : ''}`}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
           </nav>
         </div>
       </header>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.mobileMenuOpen : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        <div className={styles.mobileMenuContent} onClick={e => e.stopPropagation()}>
+          <div className={styles.mobileNavLinks}>
+            <Link href="/forums" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>💬 Forums</Link>
+            <Link href="/events" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>📅 Events</Link>
+            <Link href="/expert-qa" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>🩺 Expert Q&A</Link>
+            <Link href="/alerts" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>🚨 Alerts</Link>
+          </div>
+          <div className={styles.mobileAuthButtons}>
+            {user ? (
+              <Link href="/dashboard" className="btn btn-primary w-full" onClick={() => setMobileMenuOpen(false)}>
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="btn btn-outline w-full" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                <Link href="/register" className="btn btn-primary w-full" onClick={() => setMobileMenuOpen(false)}>Join Free</Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section className={styles.hero}>
@@ -32,17 +93,23 @@ export default function Home() {
         <div className="container">
           <div className={styles.heroContent}>
             <h1 className={styles.heroTitle}>
-              Your Dog's <span className={styles.highlight}>Best Mates</span><br />
+              Your Dog&apos;s <span className={styles.highlight}>Best Mates</span><br />
               Are Just a Tap Away
             </h1>
             <p className={styles.heroSubtitle}>
-              Join Brisbane's friendliest dog parent community. Get expert advice,
-              find local meetups, and manage your pet's health — all in one place.
+              Join Brisbane&apos;s friendliest dog parent community. Get expert advice,
+              find local meetups, and manage your pet&apos;s health — all in one place.
             </p>
             <div className={styles.heroCta}>
-              <Link href="/register" className="btn btn-primary btn-lg">
-                Get Started — It's Free
-              </Link>
+              {user ? (
+                <Link href="/dashboard" className="btn btn-primary btn-lg">
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <Link href="/register" className="btn btn-primary btn-lg">
+                  Get Started — It&apos;s Free
+                </Link>
+              )}
               <Link href="/forums" className="btn btn-outline btn-lg">
                 Browse Community
               </Link>
@@ -72,7 +139,7 @@ export default function Home() {
         <div className="container">
           <div className={styles.sectionHeader}>
             <h2>Everything Your Dog Needs</h2>
-            <p>From community support to expert care, we've got you covered</p>
+            <p>From community support to expert care, we&apos;ve got you covered</p>
           </div>
           <div className={styles.featureGrid}>
             <div className={`card ${styles.featureCard}`}>
@@ -83,7 +150,7 @@ export default function Home() {
             <div className={`card ${styles.featureCard}`}>
               <div className={styles.featureIcon}>🩺</div>
               <h3>Expert Q&A</h3>
-              <p>Get trusted answers from verified vets, trainers, and nutritionists. No more second-guessing your pet's health.</p>
+              <p>Get trusted answers from verified vets, trainers, and nutritionists. No more second-guessing your pet&apos;s health.</p>
             </div>
             <div className={`card ${styles.featureCard}`}>
               <div className={styles.featureIcon}>📅</div>
@@ -93,7 +160,7 @@ export default function Home() {
             <div className={`card ${styles.featureCard}`}>
               <div className={styles.featureIcon}>🏥</div>
               <h3>Health Tracking</h3>
-              <p>Never miss a vaccination or medication. Track your pet's health records and get timely reminders.</p>
+              <p>Never miss a vaccination or medication. Track your pet&apos;s health records and get timely reminders.</p>
             </div>
             <div className={`card ${styles.featureCard}`}>
               <div className={styles.featureIcon}>⚠️</div>
@@ -116,7 +183,7 @@ export default function Home() {
             <span className={styles.alertIcon}>🔔</span>
             <div>
               <strong>Tick Season Alert - Queensland</strong>
-              <p>Paralysis tick risk is HIGH in Southeast Queensland. Ensure your dog's tick prevention is up to date. <Link href="/alerts">Learn more</Link></p>
+              <p>Paralysis tick risk is HIGH in Southeast Queensland. Ensure your dog&apos;s tick prevention is up to date. <Link href="/alerts">Learn more</Link></p>
             </div>
           </div>
         </div>
@@ -127,10 +194,16 @@ export default function Home() {
         <div className="container">
           <div className={styles.ctaContent}>
             <h2>Ready to Join the Pack?</h2>
-            <p>Connect with dog lovers across Brisbane and Queensland. It's free to join!</p>
-            <Link href="/register" className="btn btn-primary btn-lg">
-              Create Your Free Account
-            </Link>
+            <p>Connect with dog lovers across Brisbane and Queensland. It&apos;s free to join!</p>
+            {user ? (
+              <Link href="/dashboard" className="btn btn-primary btn-lg">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <Link href="/register" className="btn btn-primary btn-lg">
+                Create Your Free Account
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -144,7 +217,7 @@ export default function Home() {
                 <span className="paw-icon"></span>
                 <span className={styles.logoText}>Ponnect</span>
               </Link>
-              <p>Australia's friendliest dog parent community. Connecting pet lovers since 2025.</p>
+              <p>Australia&apos;s friendliest dog parent community. Connecting pet lovers since 2025.</p>
             </div>
             <div className={styles.footerLinks}>
               <h4>Community</h4>

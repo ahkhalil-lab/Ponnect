@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
+import { ExpertQASkeleton } from '@/components/SkeletonLoader'
 
 interface Question {
     id: string
@@ -107,12 +108,7 @@ export default function ExpertQAPage() {
     }
 
     if (isLoading) {
-        return (
-            <div className={styles.loading}>
-                <div className="spinner spinner-lg"></div>
-                <p>Loading questions...</p>
-            </div>
-        )
+        return <ExpertQASkeleton />
     }
 
     return (

@@ -18,27 +18,41 @@ interface RegionalAlert {
     message: string
     severity: string
     type: string
+    region: string
 }
 
 export default function DashboardPage() {
     const searchParams = useSearchParams()
     const isWelcome = searchParams.get('welcome') === 'true'
     const [showWelcome, setShowWelcome] = useState(isWelcome)
-    const [stats] = useState<DashboardStats>({
+    const [isLoading, setIsLoading] = useState(true)
+    const [stats, setStats] = useState<DashboardStats>({
         dogCount: 0,
         forumPosts: 0,
-        upcomingEvents: 3,
+        upcomingEvents: 0,
         healthReminders: 0,
     })
-    const [alerts] = useState<RegionalAlert[]>([
-        {
-            id: 'tick-alert',
-            title: 'Paralysis Tick Season Alert',
-            message: 'Risk is HIGH in Southeast Queensland. Ensure your dog has up-to-date tick prevention.',
-            severity: 'WARNING',
-            type: 'TICK',
+    const [alerts, setAlerts] = useState<RegionalAlert[]>([])
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const response = await fetch('/api/dashboard/stats')
+                const data = await response.json()
+
+                if (data.success) {
+                    setStats(data.data.stats)
+                    setAlerts(data.data.alerts)
+                }
+            } catch (error) {
+                console.error('Failed to fetch dashboard data:', error)
+            } finally {
+                setIsLoading(false)
+            }
         }
-    ])
+
+        fetchDashboardData()
+    }, [])
 
     useEffect(() => {
         if (showWelcome) {
@@ -72,11 +86,12 @@ export default function DashboardPage() {
                     {alerts.map((alert) => (
                         <div key={alert.id} className={`${styles.alert} ${styles[`alert${alert.severity}`]}`}>
                             <span className={styles.alertIcon}>
-                                {alert.type === 'TICK' ? '🪲' : '⚠️'}
+                                {alert.type === 'TICK' ? '🪲' : alert.type === 'FLOOD' ? '🌊' : alert.type === 'FIRE' ? '🔥' : '⚠️'}
                             </span>
                             <div className={styles.alertContent}>
                                 <strong>{alert.title}</strong>
                                 <p>{alert.message}</p>
+                                {alert.region && <span className={styles.alertRegion}>{alert.region}</span>}
                             </div>
                             <Link href="/alerts" className={styles.alertLink}>Learn more →</Link>
                         </div>
@@ -89,7 +104,9 @@ export default function DashboardPage() {
                 <div className={`card ${styles.statCard}`}>
                     <div className={styles.statIcon}>🐕</div>
                     <div className={styles.statInfo}>
-                        <span className={styles.statNumber}>{stats.dogCount}</span>
+                        <span className={styles.statNumber}>
+                            {isLoading ? '–' : stats.dogCount}
+                        </span>
                         <span className={styles.statLabel}>My Dogs</span>
                     </div>
                     <Link href="/dogs" className={styles.statLink}>Manage →</Link>
@@ -97,7 +114,9 @@ export default function DashboardPage() {
                 <div className={`card ${styles.statCard}`}>
                     <div className={styles.statIcon}>💬</div>
                     <div className={styles.statInfo}>
-                        <span className={styles.statNumber}>{stats.forumPosts}</span>
+                        <span className={styles.statNumber}>
+                            {isLoading ? '–' : stats.forumPosts}
+                        </span>
                         <span className={styles.statLabel}>Forum Posts</span>
                     </div>
                     <Link href="/forums" className={styles.statLink}>View →</Link>
@@ -105,7 +124,9 @@ export default function DashboardPage() {
                 <div className={`card ${styles.statCard}`}>
                     <div className={styles.statIcon}>📅</div>
                     <div className={styles.statInfo}>
-                        <span className={styles.statNumber}>{stats.upcomingEvents}</span>
+                        <span className={styles.statNumber}>
+                            {isLoading ? '–' : stats.upcomingEvents}
+                        </span>
                         <span className={styles.statLabel}>Upcoming Events</span>
                     </div>
                     <Link href="/events" className={styles.statLink}>Browse →</Link>
@@ -113,7 +134,9 @@ export default function DashboardPage() {
                 <div className={`card ${styles.statCard}`}>
                     <div className={styles.statIcon}>🏥</div>
                     <div className={styles.statInfo}>
-                        <span className={styles.statNumber}>{stats.healthReminders}</span>
+                        <span className={styles.statNumber}>
+                            {isLoading ? '–' : stats.healthReminders}
+                        </span>
                         <span className={styles.statLabel}>Health Reminders</span>
                     </div>
                     <Link href="/dogs" className={styles.statLink}>Check →</Link>
@@ -156,7 +179,7 @@ export default function DashboardPage() {
             </section>
 
             {/* Getting Started */}
-            {stats.dogCount === 0 && (
+            {!isLoading && stats.dogCount === 0 && (
                 <section className={styles.section}>
                     <div className={`card ${styles.gettingStarted}`}>
                         <div className={styles.gettingStartedContent}>

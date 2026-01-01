@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
+import { EventsSkeleton } from '@/components/SkeletonLoader'
 
 interface Event {
     id: string
@@ -116,12 +117,7 @@ export default function EventsPage() {
     }, {} as Record<string, { label: string; events: Event[] }>)
 
     if (isLoading) {
-        return (
-            <div className={styles.loading}>
-                <div className="spinner spinner-lg"></div>
-                <p>Loading events...</p>
-            </div>
-        )
+        return <EventsSkeleton />
     }
 
     return (

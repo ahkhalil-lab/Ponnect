@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
+import { ForumsSkeleton } from '@/components/SkeletonLoader'
 
 interface Category {
     id: string
@@ -97,12 +98,7 @@ export default function ForumsPage() {
     }
 
     if (isLoading) {
-        return (
-            <div className={styles.loading}>
-                <div className="spinner spinner-lg"></div>
-                <p>Loading forums...</p>
-            </div>
-        )
+        return <ForumsSkeleton />
     }
 
     return (
