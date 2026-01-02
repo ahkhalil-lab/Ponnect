@@ -7,7 +7,7 @@ interface HealthRecord {
     type: string
     title: string
     description: string | null
-    date: string
+    date: Date | string
     dosage: string | null
     vetClinic: string | null
     notes: string | null
@@ -16,7 +16,7 @@ interface HealthRecord {
 interface DogInfo {
     name: string
     breed: string
-    birthDate: string | null
+    birthDate: Date | string | null
     gender: string
     weight: number | null
     bio: string | null
@@ -57,9 +57,9 @@ function delay(ms: number): Promise<void> {
 /**
  * Calculate age from birth date
  */
-function calculateAge(birthDate: string | null): string {
+function calculateAge(birthDate: Date | string | null): string {
     if (!birthDate) return 'Unknown'
-    const birth = new Date(birthDate)
+    const birth = birthDate instanceof Date ? birthDate : new Date(birthDate)
     const now = new Date()
     const years = now.getFullYear() - birth.getFullYear()
     const months = now.getMonth() - birth.getMonth()
@@ -82,11 +82,16 @@ function formatHealthRecords(records: HealthRecord[]): string {
 
     // Group by type and get recent records (limit to 10 most recent)
     const recentRecords = records
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => {
+            const dateA = a.date instanceof Date ? a.date : new Date(a.date)
+            const dateB = b.date instanceof Date ? b.date : new Date(b.date)
+            return dateB.getTime() - dateA.getTime()
+        })
         .slice(0, 10)
 
     return recentRecords.map(r => {
-        const date = new Date(r.date).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+        const recordDate = r.date instanceof Date ? r.date : new Date(r.date)
+        const date = recordDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
         let entry = `- [${r.type}] ${r.title} (${date})`
         if (r.description) entry += `: ${r.description}`
         if (r.dosage) entry += ` - Dosage: ${r.dosage}`
@@ -108,9 +113,12 @@ function buildAnswerPrompt(question: QuestionContext): string {
 
     // Build detailed dog profiles
     let dogProfilesSection = ''
+    console.log('[AI Q&A] Building prompt for question:', question.id)
+    console.log('[AI Q&A] Dogs attached:', question.dogs?.length || 0)
     if (question.dogs && question.dogs.length > 0) {
         const dogProfiles = question.dogs.map(qd => {
             const dog = qd.dog
+            console.log('[AI Q&A] Dog profile:', dog.name, 'Breed:', dog.breed, 'Health records:', dog.healthRecords?.length || 0)
             const age = calculateAge(dog.birthDate)
             const weight = dog.weight ? `${dog.weight} kg` : 'Not specified'
             const gender = dog.gender || 'Not specified'
