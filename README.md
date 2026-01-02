@@ -33,6 +33,13 @@ cloudflared tunnel run ponnect-dev
 4. Configure the tunnel to point to `http://localhost:3000`
 
 **Running both together:**
+
+Option 1 - Use the PowerShell script:
+```powershell
+.\start-dev.ps1
+```
+
+Option 2 - Run manually in separate terminals:
 ```bash
 # Terminal 1: Start the dev server
 npm run dev
