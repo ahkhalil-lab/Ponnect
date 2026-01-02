@@ -18,6 +18,31 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Cloudflare Tunnel (External Access)
+
+To expose your local development server externally (useful for mobile testing or sharing), run the Cloudflare Tunnel:
+
+```bash
+cloudflared tunnel run ponnect-dev
+```
+
+**Prerequisites:**
+1. Install [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+2. Authenticate with `cloudflared tunnel login`
+3. Create the tunnel: `cloudflared tunnel create ponnect-dev`
+4. Configure the tunnel to point to `http://localhost:3000`
+
+**Running both together:**
+```bash
+# Terminal 1: Start the dev server
+npm run dev
+
+# Terminal 2: Start the tunnel
+cloudflared tunnel run ponnect-dev
+```
+
+Your app will be accessible at the tunnel URL (e.g., `https://ponnect-dev.your-domain.com`).
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
